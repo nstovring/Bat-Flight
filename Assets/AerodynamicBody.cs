@@ -51,11 +51,6 @@ public class AerodynamicBody : RigidObject {
         liftForce = calculateAirResistanceForce(Vector3.Cross(transform.right,velocity), liftCoefficient, wingArea) ;
         gravityForce = calculateGravityForce(gravity, Mass);
 
-      
-
-        //Vector3 direction = Vector3.zero - transform.position;
-        //AddForce(direction.normalized);
-
         AddForce(gravityForce);
         AddForce(dragForce);
         AddForce(liftForce);
@@ -64,9 +59,6 @@ public class AerodynamicBody : RigidObject {
         Quaternion lookDirection = Quaternion.LookRotation(netforce);
 
         
-        //velocity += thrustForce * Time.deltaTime;
-        //Debug.DrawRay(transform.position, Vector3.zero - transform.position, Color.gray);
-
 
         Debug.DrawRay(transform.position + transform.right * 0.1f, liftForce, Color.red);
         Debug.DrawRay(transform.position, dragForce - transform.right * 0.1f, Color.green);
@@ -78,8 +70,11 @@ public class AerodynamicBody : RigidObject {
 
         Vector3 position = ApplyForces();
         transform.position = position;
-
-        //transform.rotation = Quaternion.Slerp(transform.rotation, lookDirection, 0.001f);
+        float HSpeed = Input.GetAxis("Horizontal");
+        float VSpeed = Input.GetAxis("Vertical");
+        Vector3 rotation = transform.rotation.eulerAngles;
+        Quaternion qRotation =  Quaternion.Euler(new Vector3(VSpeed, 0, -HSpeed));
+        transform.rotation *= qRotation;
     }
 
     private void LateUpdate()
