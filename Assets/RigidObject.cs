@@ -7,6 +7,7 @@ public class RigidObject : MonoBehaviour
     [Header("Body Variables")]
     public float Mass;
     public bool AirResistance;
+    public bool UseGravity;
     public float AirResistanceCoefficient = 0.7f;
     public bool ConnectedToSpring;
     public bool IsKinematic;
@@ -26,9 +27,14 @@ public class RigidObject : MonoBehaviour
     public Vector3 dragForce = Vector3.zero;
     public Vector3 liftForce = Vector3.zero;
     public Vector3 thrustForce = Vector3.zero;
-    Vector3 netforce = Vector3.zero;
+    public Vector3 netforce = Vector3.zero;
 
     void Start()
+    {
+        Initialize();
+    }
+
+    public void Initialize()
     {
         position = transform.position;
         velocity = Vector3.zero;
@@ -36,6 +42,7 @@ public class RigidObject : MonoBehaviour
         //Naive Radius calculation on the assumption that object is a sphere
         radius = transform.lossyScale.x / 2;
     }
+
     //Sum forces forces
     public void AddForce(Vector3 force)
     {
@@ -44,12 +51,6 @@ public class RigidObject : MonoBehaviour
 
     public virtual Vector3 ApplyForces()
     {
-        //If Air Resistance is enabled call calculateAirResistanceForce, final variable is crossection calculated as the area of a circle
-        if (AirResistance)
-            AddForce(calculateAirResistanceForce(velocity, AirResistanceCoefficient, (Mathf.PI) * Mathf.Pow(radius, 2)));
-
-        AddForce(calculateGravityForce(gravity, Mass));
-
         //Calculate Acceleration
         acceleration = calculateAcceleration(netforce, Mass);
 
@@ -66,11 +67,17 @@ public class RigidObject : MonoBehaviour
         //If the object is kinematic apply no forces
         if (IsKinematic)
             return;
+
+        //If Air Resistance is enabled call calculateAirResistanceForce, final variable is crossection calculated as the area of a circle
+        if (AirResistance)
+            AddForce(calculateAirResistanceForce(velocity, AirResistanceCoefficient, (Mathf.PI) * Mathf.Pow(radius, 2)));
+        if (UseGravity)
+            AddForce(calculateGravityForce(gravity, Mass));
         //Apply new position to object 
         transform.position = ApplyForces();
     }
 
-    private void LateUpdate()
+    public void ResetForces()
     {
         //Reset all forces
         netforce = Vector3.zero;
@@ -80,15 +87,26 @@ public class RigidObject : MonoBehaviour
         thrustForce = Vector3.zero;
     }
 
+    private void LateUpdate()
+    {
+        ResetForces();
+    }
+
     //Calculating the air resistance based on value of air density at 25 degrees celcius, otherwise using the drag equation
-    Vector3 calculateAirResistanceForce(Vector3 velocity, float dragCoeffecient, float crossAreal)
+    public Vector3 calculateAirResistanceForce(Vector3 velocity, float dragCoeffecient, float crossAreal)
     {
         float airDensity = 1.1839f;
-        Vector3 dragForce = (0.5f) * airDensity * (Pow(velocity, 2)) * dragCoeffecient * crossAreal;
-        return dragForce;
+        Vector3 force = (0.5f) * airDensity * velocity.magnitude * dragCoeffecient * crossAreal * Vector3.Normalize(velocity);
+        return force;
     }
+
+    //public float GetDragCoefficient(Vector3 dragForce, float p, Vector3 flowSpeed, float area)
+    //{
+    //   // float cD = ((2 * dragForce) / (p * flowSpeed.sqrMagnitude * area));
+    //   // return cD;
+    //}
     //No built in vector pow function so defined one myself
-    Vector3 Pow(Vector3 v, int p)
+    public Vector3 Pow(Vector3 v, int p)
     {
         v.x = Mathf.Pow(v.x, p);
         v.y = Mathf.Pow(v.y, p);
@@ -97,13 +115,13 @@ public class RigidObject : MonoBehaviour
     }
 
     //Simply the defined gravity vector multiplied by mass
-    Vector3 calculateGravityForce(Vector3 gravity, float mass)
+    protected Vector3 calculateGravityForce(Vector3 gravity, float mass)
     {
         return gravity * mass;
     }
 
     //The force divided by the mass
-    Vector3 calculateAcceleration(Vector3 force, float mass)
+    protected Vector3 calculateAcceleration(Vector3 force, float mass)
     {
         return force / mass;
     }
