@@ -56,10 +56,6 @@ public class AerodynamicBody : RigidObject {
         AddForce(liftForce);
         AddForce(thrustForce);
 
-        Quaternion lookDirection = Quaternion.LookRotation(netforce);
-
-        
-
         Debug.DrawRay(transform.position + transform.right * 0.1f, liftForce, Color.red);
         Debug.DrawRay(transform.position, dragForce - transform.right * 0.1f, Color.green);
         Debug.DrawRay(transform.position, gravityForce, Color.blue);
