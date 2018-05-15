@@ -100,12 +100,7 @@ public class RigidObject : MonoBehaviour
         return force;
     }
 
-    //public float GetDragCoefficient(Vector3 dragForce, float p, Vector3 flowSpeed, float area)
-    //{
-    //   // float cD = ((2 * dragForce) / (p * flowSpeed.sqrMagnitude * area));
-    //   // return cD;
-    //}
-    //No built in vector pow function so defined one myself
+    //No built in vector pow function so defined one
     public Vector3 Pow(Vector3 v, int p)
     {
         v.x = Mathf.Pow(v.x, p);
